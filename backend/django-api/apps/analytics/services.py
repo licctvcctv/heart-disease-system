@@ -207,6 +207,8 @@ class OverviewService:
                     "columns": meta.get("columns", 0),
                     "target": meta.get("target", "risk_label"),
                     "usage": meta.get("usage", "ADS 指标分析"),
+                    "positiveCount": _to_int(row.get("positive_count")),
+                    "prevalenceRate": _rate(_to_int(row.get("positive_count")), _to_int(row.get("sample_count"))),
                 }
             )
 

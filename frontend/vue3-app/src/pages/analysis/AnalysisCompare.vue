@@ -11,13 +11,13 @@ const datasets = ref<{ name: string; rows: number; cols: number; positive: numbe
 
 onMounted(async () => {
   try {
-    const data = await requestJson<{ sampleCount: number; positiveCount: number; prevalenceRate: number; modelAuc: number; datasets: { name: string; rows: number; columns: number; target: string; usage: string }[] }>('/dashboard/overview');
+    const data = await requestJson<{ modelAuc: number; datasets: { name: string; rows: number; columns: number; positiveCount?: number; prevalenceRate?: number }[] }>('/dashboard/overview');
     datasets.value = data.datasets.map(ds => ({
       name: ds.name,
       rows: ds.rows,
       cols: ds.columns,
-      positive: Math.round(ds.rows * (data.prevalenceRate || 0)),
-      rate: data.prevalenceRate || 0,
+      positive: ds.positiveCount || 0,
+      rate: ds.prevalenceRate || 0,
       auc: data.modelAuc || 0,
     }));
   } catch {
