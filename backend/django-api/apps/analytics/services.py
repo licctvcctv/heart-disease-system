@@ -344,10 +344,11 @@ class ModelMetricsService:
         feature_rows = _ensure_rows(
             _client().fetch_all(
                 """
-                SELECT feature_name, feature_label, importance
+                SELECT feature_name, feature_label, AVG(importance) as importance
                 FROM ads_model_feature_importance
+                GROUP BY feature_name, feature_label
                 ORDER BY importance DESC
-                LIMIT 8
+                LIMIT 16
                 """
             ),
             "ads_model_feature_importance",
@@ -368,7 +369,7 @@ class ModelMetricsService:
             {
                 "feature": str(row.get("feature_name", "")),
                 "label": str(row.get("feature_label") or FEATURE_LABELS.get(str(row.get("feature_name", "")), row.get("feature_name", ""))),
-                "importance": round(_to_float(row.get("importance")), 4),
+                "importance": round(_to_float(row.get("importance")), 4),  # raw value, frontend normalizes
             }
             for row in feature_rows
         ]

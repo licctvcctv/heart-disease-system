@@ -11,14 +11,14 @@ const features = ref<{ name: string; label: string; importance: number; category
 onMounted(async () => {
   try {
     const data = await requestJson<{ featureImportance: { feature: string; label: string; importance: number }[] }>('/model/metrics');
-    features.value = data.featureImportance
-      .map(f => ({
-        name: f.feature,
-        label: f.label,
-        importance: f.importance,
-        category: categorize(f.feature),
-      }))
-      .sort((a, b) => b.importance - a.importance);
+    const raw = data.featureImportance.sort((a, b) => b.importance - a.importance);
+    const maxVal = raw.length > 0 ? raw[0].importance : 1;
+    features.value = raw.map(f => ({
+      name: f.feature,
+      label: f.label,
+      importance: maxVal > 0 ? f.importance / maxVal : 0, // normalize to 0-1
+      category: categorize(f.feature),
+    }));
   } catch {
     // API not available, keep empty
   } finally {
