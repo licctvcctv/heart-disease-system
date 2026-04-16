@@ -28,7 +28,7 @@ const metricsOption = computed(() => ({
     data: models.value.map(m => m.name),
     axisLabel: { color: '#64748b' },
   },
-  yAxis: { type: 'value', min: 0.7, max: 1, axisLabel: { color: '#64748b' }, splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)' } } },
+  yAxis: { type: 'value', min: 0, max: 1, axisLabel: { color: '#64748b' }, splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)' } } },
   series: [
     { name: 'Accuracy', type: 'bar', data: models.value.map(m => m.accuracy), itemStyle: { color: '#06b6d4', borderRadius: [4, 4, 0, 0] }, barWidth: 16 },
     { name: 'Precision', type: 'bar', data: models.value.map(m => m.precision), itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }, barWidth: 16 },
