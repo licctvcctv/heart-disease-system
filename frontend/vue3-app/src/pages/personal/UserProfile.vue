@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { NCard, NSpace, NAvatar, NForm, NFormItem, NInput, NButton, NGrid, NGridItem } from 'naive-ui';
 
 const message = inject<any>('message');
+
+const PROFILE_KEY = 'user_profile';
 
 const profile = ref({
   username: '',
@@ -16,7 +18,40 @@ const profile = ref({
 
 const passwords = ref({ old: '', new1: '', new2: '' });
 
+const loadProfile = () => {
+  const username = localStorage.getItem('username') || '';
+  const saved = localStorage.getItem(PROFILE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      profile.value = { ...profile.value, ...parsed };
+    } catch {
+      // ignore
+    }
+  }
+  if (username) {
+    profile.value.username = username;
+    if (!profile.value.nickname) {
+      profile.value.nickname = username;
+    }
+  }
+  if (!profile.value.role) {
+    profile.value.role = username === 'admin' ? '管理员' : '普通用户';
+  }
+  if (!profile.value.regDate) {
+    profile.value.regDate = new Date().toLocaleDateString('zh-CN');
+  }
+};
+
+onMounted(() => {
+  loadProfile();
+});
+
 const saveProfile = () => {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile.value));
+  if (profile.value.username) {
+    localStorage.setItem('username', profile.value.username);
+  }
   message?.success('个人资料保存成功');
 };
 
@@ -61,7 +96,7 @@ const changePassword = () => {
         <n-grid :cols="2" :x-gap="16" :y-gap="4">
           <n-grid-item>
             <n-form-item label="用户名">
-              <n-input v-model:value="profile.username" disabled placeholder="未设置" />
+              <n-input v-model:value="profile.username" placeholder="未设置" />
             </n-form-item>
           </n-grid-item>
           <n-grid-item>

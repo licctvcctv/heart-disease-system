@@ -7,20 +7,20 @@ import { requestJson } from '@/services/http';
 interface PredictionRecord {
   id: number;
   probability: number;
-  risk_level: number;
-  risk_label: string;
-  model_name: string;
-  created_at: string;
-  input_data: any;
+  riskLevel: string;
+  riskLabel: string;
+  modelName: string;
+  createdAt: string;
+  inputData: any;
 }
 
 const records = ref<PredictionRecord[]>([]);
 const total = ref(0);
 const loading = ref(true);
 
-const riskTagType = (level: number) => {
-  if (level >= 3) return 'error';
-  if (level >= 2) return 'warning';
+const riskTagType = (level: string) => {
+  if (level === 'high') return 'error';
+  if (level === 'medium') return 'warning';
   return 'success';
 };
 
@@ -30,9 +30,30 @@ const probColor = (prob: number) => {
   return '#22c55e';
 };
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+};
+
 const columns: DataTableColumns<PredictionRecord> = [
-  { title: '时间', key: 'created_at', width: 180 },
-  { title: '模型', key: 'model_name', width: 160 },
+  {
+    title: '时间',
+    key: 'createdAt',
+    width: 180,
+    render(row) {
+      return formatDate(row.createdAt);
+    },
+  },
+  { title: '模型', key: 'modelName', width: 160 },
   {
     title: '预测概率',
     key: 'probability',
@@ -44,10 +65,10 @@ const columns: DataTableColumns<PredictionRecord> = [
   },
   {
     title: '风险等级',
-    key: 'risk_level',
+    key: 'riskLevel',
     width: 120,
     render(row) {
-      return h(NTag, { type: riskTagType(row.risk_level), size: 'small', bordered: false }, () => row.risk_label || `等级${row.risk_level}`);
+      return h(NTag, { type: riskTagType(row.riskLevel), size: 'small', bordered: false }, () => row.riskLabel);
     },
   },
 ];
