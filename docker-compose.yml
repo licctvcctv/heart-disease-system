@@ -1,0 +1,114 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: heart-disease-mysql
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-heart_disease}
+      MYSQL_USER: ${MYSQL_USER:-heart_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-heart_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: ./backend/django-api
+      dockerfile: Dockerfile
+    container_name: heart-disease-backend
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings}
+      MYSQL_HOST: ${MYSQL_HOST:-mysql}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-heart_disease}
+      MYSQL_USER: ${MYSQL_USER:-heart_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-heart_password}
+      DATABASE_URL: ${DATABASE_URL:-mysql://heart_user:heart_password@mysql:3306/heart_disease}
+      RAW_DATA_DIR: ${RAW_DATA_DIR:-./data/raw}
+      PROCESSED_DATA_DIR: ${PROCESSED_DATA_DIR:-./data/processed}
+      MODEL_DIR: ${MODEL_DIR:-./data/models}
+      ML_RANDOM_SEED: ${ML_RANDOM_SEED:-42}
+      ML_MODEL_NAME: ${ML_MODEL_NAME:-logistic_regression}
+      ML_TEST_SIZE: ${ML_TEST_SIZE:-0.2}
+      ANALYTICS_QUERY_ENGINE: ${ANALYTICS_QUERY_ENGINE:-mysql}
+      HIVE_HOST: ${HIVE_HOST:-192.168.6.129}
+      HIVE_PORT: ${HIVE_PORT:-10000}
+      HIVE_USER: ${HIVE_USER:-root1}
+      HIVE_AUTH: ${HIVE_AUTH:-NONE}
+      HIVE_DATABASE: ${HIVE_DATABASE:-heart_disease_system}
+      HDFS_URI: ${HDFS_URI:-hdfs://master-Zb24621219:9000}
+      ADS_MYSQL_HOST: ${ADS_MYSQL_HOST:-mysql}
+      ADS_MYSQL_PORT: ${ADS_MYSQL_PORT:-3306}
+      ADS_MYSQL_DATABASE: ${ADS_MYSQL_DATABASE:-heart_disease}
+      ADS_MYSQL_USER: ${ADS_MYSQL_USER:-heart_user}
+      ADS_MYSQL_PASSWORD: ${ADS_MYSQL_PASSWORD:-heart_password}
+      ML_MODEL_DIR: ${ML_MODEL_DIR:-/app/ml/artifacts/smoke/kaggle_2020}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    working_dir: /app/backend/django-api
+
+  frontend:
+    build:
+      context: ./frontend/vue3-app
+      dockerfile: Dockerfile
+    container_name: heart-disease-frontend
+    command: sh -c "npm run dev -- --host 0.0.0.0"
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api}
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./:/app
+    working_dir: /app/frontend/vue3-app
+
+  # The analysis API reads offline ADS tables from MySQL.
+  # Refresh MySQL ADS by running bigdata/scripts/sync_hive_ads_to_mysql.py after Hive jobs finish.
+  #
+  # hive-metastore:
+  #   profiles: ["hive"]
+  #   image: apache/hive:4.0.0
+  #   container_name: heart-disease-hive-metastore
+  #   environment:
+  #     TZ: ${TZ:-Asia/Shanghai}
+  #     SERVICE_NAME: metastore
+  #     HIVE_DATABASE: ${HIVE_DATABASE:-heart_disease}
+  #   ports:
+  #     - "9083:9083"
+  #
+  # namenode:
+  #   profiles: ["hive"]
+  #   image: bde2020/hadoop-namenode:2.0.0-hadoop3.3.6-java8
+  #   container_name: heart-disease-hdfs-namenode
+  #   environment:
+  #     CLUSTER_NAME: heart-disease-hdfs
+  #     CORE_CONF_fs_defaultFS: ${HDFS_URI:-hdfs://namenode:8020}
+  #   ports:
+  #     - "9870:9870"
+
+volumes:
+  mysql_data:

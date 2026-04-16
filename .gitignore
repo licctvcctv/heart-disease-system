@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+db.sqlite3
+
+# Node
+node_modules/
+dist/
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.env.local
+
+# ML artifacts
+ml/artifacts/
+
+# Large data files
+*.csv
+*.zip
+
+# Build
+*.tar.gz
+
+# Images (keep in repo but ignore large screenshots)
+frontend-redesign-*.png

@@ -1,0 +1,6 @@
+com/heartdisease/mapreduce/Kaggle2022Mapper.class
+com/heartdisease/mapreduce/HeartEtlJob.class
+com/heartdisease/mapreduce/Kaggle2020Mapper.class
+com/heartdisease/mapreduce/MapperSupport.class
+com/heartdisease/mapreduce/CsvRecordParser.class
+com/heartdisease/mapreduce/UciClevelandMapper.class
