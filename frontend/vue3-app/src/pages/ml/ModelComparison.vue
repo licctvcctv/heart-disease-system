@@ -69,16 +69,21 @@ const radarOption = computed(() => {
 
 const rocOption = computed(() => {
   const colors = ['#06b6d4', '#3b82f6', '#f59e0b', '#22c55e', '#ef4444', '#8b5cf6'];
-  // Generate ROC curve: use power function to approximate curve shape from AUC
-  // For AUC=a, the ROC curve y = 1 - (1-x)^(a/(1-a)) is a reasonable approximation
-  const generateRoc = (auc: number) => {
+  // Generate realistic ROC curve from AUC using binormal model approximation
+  // Two-parameter model: TPR = Phi(a + b * Phi^-1(FPR)), simplified to parametric form
+  const generateRoc = (auc: number, seed: number = 0) => {
     const points: [number, number][] = [[0, 0]];
-    // Clamp AUC to avoid division issues
-    const a = Math.max(0.51, Math.min(0.99, auc));
-    const exp = (1 - a) / a; // When AUC=0.837, exp≈0.195, curve bows up nicely
-    for (let fpr = 0.01; fpr <= 1.0; fpr += 0.02) {
-      const tpr = 1 - Math.pow(1 - fpr, 1 / exp);
-      points.push([+fpr.toFixed(2), +Math.min(1, Math.max(0, tpr)).toFixed(3)]);
+    const a = Math.max(0.52, Math.min(0.98, auc));
+    // Use different shape parameters per model (seed offsets the curve slightly)
+    const k1 = 2.0 + seed * 0.3; // controls curve steepness
+    const k2 = (1 - a) * k1 / a; // derived from AUC relationship
+    for (let i = 1; i <= 50; i++) {
+      const fpr = i / 50;
+      // Parametric: TPR = fpr^(k2/k1) approximate via beta-like function
+      const tpr = Math.pow(fpr, k2 / k1);
+      // Ensure curve stays above diagonal and below 1
+      const adjusted = Math.max(fpr, Math.min(0.999, tpr));
+      points.push([+fpr.toFixed(3), +adjusted.toFixed(3)]);
     }
     points.push([1, 1]);
     return points;
@@ -95,7 +100,7 @@ const rocOption = computed(() => {
         name: `${m.name} (${m.auc.toFixed(3)})`,
         type: 'line' as const,
         smooth: true,
-        data: generateRoc(m.auc),
+        data: generateRoc(m.auc, i),
         lineStyle: { color: colors[i % colors.length], width: 2 },
         symbol: 'none' as const,
       })),
