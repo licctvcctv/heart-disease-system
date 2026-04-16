@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, h } from 'vue';
+import { ref, computed, h, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { NLayout, NLayoutSider, NLayoutHeader, NMenu, NIcon, NAvatar, NDropdown, NButton, NSpace } from 'naive-ui';
 import type { MenuOption } from 'naive-ui';
@@ -25,6 +25,8 @@ import {
 const router = useRouter();
 const route = useRoute();
 const collapsed = ref(false);
+const currentUser = ref(localStorage.getItem('username') || '用户');
+const userInitial = computed(() => currentUser.value.charAt(0).toUpperCase());
 
 const renderIcon = (icon: any) => () => h(NIcon, null, { default: () => h(icon) });
 
@@ -215,11 +217,12 @@ const defaultExpanded = computed(() => {
         <span style="font-size: 18px; font-weight: 600;">{{ pageTitle }}</span>
         <n-space align="center" :size="12">
           <n-dropdown :options="userOptions" @select="handleUserSelect">
-            <n-button quaternary circle>
-              <n-avatar :size="32" style="background: linear-gradient(135deg, #06b6d4, #3b82f6); cursor: pointer;">
-                <span style="font-size: 13px; font-weight: 700;">管</span>
+            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 8px;">
+              <n-avatar :size="32" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">
+                <span style="font-size: 13px; font-weight: 700;">{{ userInitial }}</span>
               </n-avatar>
-            </n-button>
+              <span style="font-size: 14px; color: #e2e8f0;">{{ currentUser }}</span>
+            </div>
           </n-dropdown>
         </n-space>
       </n-layout-header>

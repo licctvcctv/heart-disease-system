@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, inject, onMounted } from 'vue';
-import { NCard, NSpace, NAvatar, NForm, NFormItem, NInput, NButton, NGrid, NGridItem } from 'naive-ui';
+import { ref, onMounted } from 'vue';
+import { NCard, NSpace, NAvatar, NForm, NFormItem, NInput, NButton, NGrid, NGridItem, useMessage } from 'naive-ui';
 
-const message = inject<any>('message');
+let message: ReturnType<typeof useMessage> | null = null;
+try { message = useMessage(); } catch { /* */ }
 
 const PROFILE_KEY = 'user_profile';
 
@@ -61,8 +62,20 @@ const changePassword = () => {
     return;
   }
   if (passwords.value.new1 !== passwords.value.new2) {
-    message?.error('两次密码不一致');
+    message?.error('两次新密码不一致');
     return;
+  }
+  // 校验旧密码
+  const username = localStorage.getItem('username') || '';
+  const users = JSON.parse(localStorage.getItem('hd_users') || '{}');
+  if (users[username] && users[username].password !== passwords.value.old) {
+    message?.error('当前密码错误');
+    return;
+  }
+  // 更新密码
+  if (users[username]) {
+    users[username].password = passwords.value.new1;
+    localStorage.setItem('hd_users', JSON.stringify(users));
   }
   message?.success('密码修改成功');
   passwords.value = { old: '', new1: '', new2: '' };

@@ -547,8 +547,8 @@ onBeforeUnmount(() => {
 .screen-main {
   flex: 1;
   display: flex;
-  gap: 12px;
-  padding: 12px 16px 16px;
+  gap: 10px;
+  padding: 8px 16px 8px;
   min-height: 0;
   position: relative;
   z-index: 10;
