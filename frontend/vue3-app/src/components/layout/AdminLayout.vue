@@ -155,7 +155,11 @@ const userOptions = [
 ];
 
 const handleUserSelect = (key: string) => {
-  if (key === 'logout') router.push('/login');
+  if (key === 'logout') {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('username');
+    router.push('/login');
+  }
   else if (key === 'profile') router.push('/personal/profile');
   else if (key === 'history') router.push('/personal/history');
 };

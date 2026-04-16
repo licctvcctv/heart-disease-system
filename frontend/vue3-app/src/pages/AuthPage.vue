@@ -27,7 +27,9 @@ const handleLogin = async () => {
     return;
   }
   loading.value = true;
-  await new Promise(r => setTimeout(r, 800));
+  await new Promise(r => setTimeout(r, 600));
+  localStorage.setItem('isLoggedIn', 'true');
+  localStorage.setItem('username', loginForm.value.username);
   loading.value = false;
   message?.success('登录成功');
   router.push('/');
