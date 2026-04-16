@@ -40,7 +40,12 @@ const selectedClinical = computed<ClinicalFeatureItem | undefined>(() =>
 
 const overviewOption = computed(() => createOverviewOption(bundle.value?.overview.prevalenceRate || 0));
 const ageOption = computed(() => createAgeOption(bundle.value?.age.items || []));
-const lifestyleOption = computed(() => createLifestyleOption(bundle.value?.lifestyle.items || []));
+// 大屏只显示患病率最高的前8个因素，避免拥挤
+const topLifestyleItems = computed(() => {
+  const items = bundle.value?.lifestyle.items || [];
+  return [...items].sort((a, b) => b.prevalenceRate - a.prevalenceRate).slice(0, 8);
+});
+const lifestyleOption = computed(() => createLifestyleOption(topLifestyleItems.value));
 const clinicalOption = computed(() => createClinicalOption(selectedClinical.value));
 const metricsOption = computed(() => createModelMetricsOption(bundle.value?.metrics.models || []));
 const importanceBars = computed(() => createImportanceBars(bundle.value?.metrics.featureImportance || []));
