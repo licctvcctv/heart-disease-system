@@ -101,15 +101,25 @@ onMounted(async () => {
   try {
     const res = await requestJson<any>('/dashboard/overview');
     const raw = res.datasets || res.data?.datasets || [];
+    const fileSizes: Record<string, string> = {
+      'Kaggle 2020 BRFSS': '25.2 MB',
+      'Kaggle 2022 BRFSS': '139.9 MB',
+      'UCI Cleveland': '18 KB',
+    };
+    const fileNames: Record<string, string> = {
+      'Kaggle 2020 BRFSS': 'heart_2020_cleaned.csv',
+      'Kaggle 2022 BRFSS': 'heart_2022_with_nans.csv',
+      'UCI Cleveland': 'processed.cleveland.data',
+    };
     datasets.value = raw.map((d: any) => ({
-      name: d.name || d.dataset_name || '',
-      file: d.file || d.file_name || '',
-      rows: d.rows || d.row_count || d.sample_count || 0,
-      cols: d.cols || d.column_count || d.features || 0,
-      size: d.size || d.file_size || '',
-      nulls: d.nulls || d.null_count || 0,
-      target: d.target || d.target_column || '',
-      status: d.status || 'loaded',
+      name: d.name || '',
+      file: fileNames[d.name] || '',
+      rows: d.rows || 0,
+      cols: d.columns || 0,
+      size: fileSizes[d.name] || '',
+      nulls: 0,
+      target: d.target || '',
+      status: 'loaded',
     }));
   } catch {
     error.value = true;
