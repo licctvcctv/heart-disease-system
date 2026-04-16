@@ -7,7 +7,7 @@ import { requestJson } from '@/services/http';
 
 const loading = ref(true);
 
-const datasets = ref<{ name: string; rows: number; cols: number; positive: number; rate: number; auc: number }[]>([]);
+const datasets = ref<{ name: string; rows: number; cols: number; positive: number; rate: number }[]>([]);
 
 onMounted(async () => {
   try {
@@ -18,7 +18,6 @@ onMounted(async () => {
       cols: ds.columns,
       positive: ds.positiveCount || 0,
       rate: ds.prevalenceRate || 0,
-      auc: data.modelAuc || 0,
     }));
   } catch {
     // API not available, keep empty
@@ -41,7 +40,7 @@ const comparisonOption = computed(() => ({
   grid: { left: 50, right: 30, top: 50, bottom: 30 },
   xAxis: {
     type: 'category',
-    data: ['样本量(k)', '特征数', '患病率(%)', 'AUC×100'],
+    data: ['样本量(k)', '特征数', '患病率(%)', '阳性数(k)'],
     axisLabel: { color: '#64748b' },
   },
   yAxis: { type: 'value', axisLabel: { color: '#64748b' }, splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)' } } },
@@ -51,7 +50,7 @@ const comparisonOption = computed(() => ({
     return {
       name,
       type: 'bar',
-      data: [+(d.rows / 1000).toFixed(1), d.cols, +(d.rate * 100).toFixed(1), +(d.auc * 100).toFixed(1)],
+      data: [+(d.rows / 1000).toFixed(1), d.cols, +(d.rate * 100).toFixed(1), +(d.positive / 1000).toFixed(1)],
       itemStyle: { color: ['#06b6d4', '#3b82f6', '#f59e0b', '#ef4444'][i], borderRadius: [4, 4, 0, 0] },
       barWidth: 28,
     };
@@ -64,8 +63,8 @@ const radarOption = computed(() => ({
       { name: '数据规模', max: 100 },
       { name: '特征丰富度', max: 100 },
       { name: '患病率', max: 100 },
-      { name: '模型AUC', max: 100 },
-      { name: '数据质量', max: 100 },
+      { name: '阳性样本', max: 100 },
+      { name: '数据完整度', max: 100 },
     ],
     shape: 'polygon',
     splitArea: { areaStyle: { color: ['rgba(30,41,59,0.3)', 'rgba(15,23,42,0.3)'] } },
@@ -83,8 +82,8 @@ const radarOption = computed(() => ({
           Math.round((d.rows / maxRows) * 100),
           Math.round((d.cols / maxCols) * 100),
           Math.round(d.rate * 100),
-          Math.round(d.auc * 100),
-          Math.round(Math.min(d.rows / 1000, 100)),
+          Math.round((d.positive / Math.max(...datasets.value.map(dd => dd.positive), 1)) * 100),
+          d.rate > 0 ? Math.round(Math.min(100, (1 - d.rate) * 100)) : 50,
         ],
         name: d.name,
         lineStyle: { color: colors[i] },
@@ -108,15 +107,7 @@ const columns: DataTableColumns = [
       style: { color: row.rate > 0.3 ? '#ef4444' : '#06b6d4', fontWeight: 600 },
     }, (row.rate * 100).toFixed(1) + '%'),
   },
-  {
-    title: 'AUC',
-    key: 'auc',
-    width: 100,
-    align: 'right',
-    render: (row: any) => h('span', {
-      style: { color: '#22c55e', fontWeight: 600 },
-    }, row.auc.toFixed(3)),
-  },
+  { title: '阳性数', key: 'positive', width: 100, align: 'right', render: (row: any) => row.positive.toLocaleString() },
 ];
 
 const toggleDataset = (name: string) => {
@@ -167,11 +158,7 @@ const toggleDataset = (name: string) => {
                 </n-statistic>
               </n-grid-item>
               <n-grid-item>
-                <n-statistic label="AUC" tabular-nums>
-                  <template #default>
-                    <span style="color: #22c55e;">{{ ds.auc.toFixed(3) }}</span>
-                  </template>
-                </n-statistic>
+                <n-statistic label="阳性数" :value="ds.positive" tabular-nums />
               </n-grid-item>
             </n-grid>
           </n-card>
