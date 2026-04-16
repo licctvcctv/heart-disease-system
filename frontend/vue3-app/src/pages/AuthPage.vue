@@ -5,7 +5,8 @@ import { useMessage } from 'naive-ui';
 import ParticleBackground from '@/components/ParticleBackground.vue';
 
 const router = useRouter();
-const message = useMessage();
+let message: ReturnType<typeof useMessage> | null = null;
+try { message = useMessage(); } catch { /* provider not ready */ }
 const loading = ref(false);
 const activeTab = ref('login');
 
@@ -22,29 +23,29 @@ onBeforeUnmount(() => {
 
 const handleLogin = async () => {
   if (!loginForm.value.username || !loginForm.value.password) {
-    message.warning('请填写用户名和密码');
+    message?.warning('请填写用户名和密码');
     return;
   }
   loading.value = true;
   await new Promise(r => setTimeout(r, 800));
   loading.value = false;
-  message.success('登录成功');
+  message?.success('登录成功');
   router.push('/');
 };
 
 const handleRegister = async () => {
   if (!registerForm.value.username || !registerForm.value.password) {
-    message.warning('请填写完整信息');
+    message?.warning('请填写完整信息');
     return;
   }
   if (registerForm.value.password !== registerForm.value.confirmPassword) {
-    message.error('两次密码输入不一致');
+    message?.error('两次密码输入不一致');
     return;
   }
   loading.value = true;
   await new Promise(r => setTimeout(r, 800));
   loading.value = false;
-  message.success('注册成功，请登录');
+  message?.success('注册成功，请登录');
   activeTab.value = 'login';
 };
 </script>
