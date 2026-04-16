@@ -1,0 +1,17 @@
+[Unit]
+Description=Heart Disease Django API
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=root1
+Group=root1
+WorkingDirectory=/home/root1/heart-disease-system/backend/django-api
+EnvironmentFile=/home/root1/heart-disease-system/backend/django-api/.env
+ExecStart=/home/root1/heart-disease-system/backend/django-api/.venv/bin/python manage.py runserver 0.0.0.0:8000 --noreload
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

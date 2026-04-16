@@ -1,0 +1,13 @@
+[Unit]
+Description=Update /etc/hosts with current IP for Hadoop
+Before=heart-disease-backend.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/root1/heart-disease-system/scripts/update-hosts.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

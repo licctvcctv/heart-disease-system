@@ -1,0 +1,16 @@
+[Unit]
+Description=Heart Disease Vue Frontend (SPA)
+After=network.target heart-disease-backend.service
+Wants=heart-disease-backend.service
+
+[Service]
+Type=simple
+User=root1
+Group=root1
+WorkingDirectory=/home/root1/heart-disease-system/frontend/vue3-app/dist
+ExecStart=/usr/bin/python3 /home/root1/heart-disease-system/frontend/vue3-app/dist/serve.py 4173
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
