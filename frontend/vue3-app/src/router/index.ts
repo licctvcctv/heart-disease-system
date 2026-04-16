@@ -36,7 +36,6 @@ const router = createRouter({
         { path: 'system/users', name: 'system-users', component: () => import('@/pages/system/UserManagement.vue') },
         { path: 'personal/profile', name: 'personal-profile', component: () => import('@/pages/personal/UserProfile.vue') },
         { path: 'personal/history', name: 'personal-history', component: () => import('@/pages/personal/PredictionHistory.vue') },
-        { path: 'personal/reports', name: 'personal-reports', component: () => import('@/pages/personal/AnalysisReports.vue') },
       ],
     },
   ],

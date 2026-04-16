@@ -88,7 +88,6 @@ const menuOptions = computed<MenuOption[]>(() => [
     children: [
       { label: '个人资料', key: 'personal-profile', icon: renderIcon(PersonOutline) },
       { label: '预测历史', key: 'personal-history', icon: renderIcon(TimeOutline) },
-      { label: '分析报告', key: 'personal-reports', icon: renderIcon(ReaderOutline) },
     ],
   },
 ]);
@@ -111,7 +110,6 @@ const routeMap: Record<string, string> = {
   'system-users': '/system/users',
   'personal-profile': '/personal/profile',
   'personal-history': '/personal/history',
-  'personal-reports': '/personal/reports',
 };
 
 const titleMap: Record<string, string> = {
@@ -132,7 +130,6 @@ const titleMap: Record<string, string> = {
   'system-users': '用户管理',
   'personal-profile': '个人资料',
   'personal-history': '预测历史',
-  'personal-reports': '分析报告',
 };
 
 const activeKey = computed(() => route.name as string);
