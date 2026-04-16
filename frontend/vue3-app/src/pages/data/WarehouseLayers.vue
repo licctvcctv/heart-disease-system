@@ -7,7 +7,9 @@ import { requestJson } from '@/services/http';
 
 interface TableInfo {
   name: string;
-  rows: number;
+  rows?: number;
+  size?: number;
+  sizeStr?: string;
   description: string;
 }
 
@@ -22,8 +24,15 @@ const loading = ref(true);
 const activeLayer = ref('ODS');
 
 const columns: DataTableColumns<TableInfo> = [
-  { title: '表名', key: 'name', width: 240 },
-  { title: '行数', key: 'rows', width: 120 },
+  { title: '表名', key: 'name', width: 280, render: (row: any) => h('span', { style: { fontFamily: 'monospace', fontSize: '13px' } }, row.name) },
+  {
+    title: '数据量', key: 'size', width: 150, align: 'right',
+    render: (row: any) => {
+      if (row.sizeStr) return h(NTag, { size: 'small', type: 'info', bordered: false }, { default: () => row.sizeStr });
+      if (row.rows !== undefined) return h(NTag, { size: 'small', type: 'success', bordered: false }, { default: () => row.rows + ' 行' });
+      return '-';
+    },
+  },
   { title: '描述', key: 'description' },
 ];
 
