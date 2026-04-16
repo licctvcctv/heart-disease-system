@@ -69,14 +69,18 @@ const radarOption = computed(() => {
 
 const rocOption = computed(() => {
   const colors = ['#06b6d4', '#3b82f6', '#f59e0b', '#22c55e', '#ef4444', '#8b5cf6'];
-  // Generate approximate ROC curve points based on AUC
+  // Generate ROC curve: use power function to approximate curve shape from AUC
+  // For AUC=a, the ROC curve y = 1 - (1-x)^(a/(1-a)) is a reasonable approximation
   const generateRoc = (auc: number) => {
     const points: [number, number][] = [[0, 0]];
-    const steps = [0.02, 0.05, 0.1, 0.2, 0.4, 0.6, 1];
-    for (const fpr of steps) {
-      const tpr = Math.min(1, Math.pow(fpr, 1 - auc) * auc + (1 - Math.pow(1 - fpr, auc)) * (1 - auc / 2));
-      points.push([fpr, +tpr.toFixed(2)]);
+    // Clamp AUC to avoid division issues
+    const a = Math.max(0.51, Math.min(0.99, auc));
+    const exp = (1 - a) / a; // When AUC=0.837, exp≈0.195, curve bows up nicely
+    for (let fpr = 0.01; fpr <= 1.0; fpr += 0.02) {
+      const tpr = 1 - Math.pow(1 - fpr, 1 / exp);
+      points.push([+fpr.toFixed(2), +Math.min(1, Math.max(0, tpr)).toFixed(3)]);
     }
+    points.push([1, 1]);
     return points;
   };
 
